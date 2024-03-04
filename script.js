@@ -85,34 +85,34 @@ const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 const API_KEY =
   "live_Wav4bwy9xSzMtY5dxDWzZaZaI4PjIpyEQ2jGItCxW8D7WspoHRqCH8PyFdnhbmrc";
 
-  const url = `https://api.thecatapi.com/v1/breeds`;
-  let storedBreeds = [];
+const url = `https://api.thecatapi.com/v1/breeds`;
+let storedBreeds = [];
 
-  async function initialLoad() {
-  
+async function initialLoad() {
+
     try {
       const response = await fetch(url, {
         headers: {
           "x-api-key": API_KEY,
         },
       });
-  
+
       let data = await response.json();
-  
+
       // Filter to only include those with an `image` object
       data = data.filter((img) => img.image?.url != null);
-  
+
       storedBreeds = data;
-  
+
       for (let i = 0; i < storedBreeds.length; i++) {
         const breed = storedBreeds[i];
         //console.dir(breed)
         //console.log('is the breed')
         let option = document.createElement("option");
-  
+
         // Skip any breeds that don't have an image
         if (!breed.image) continue;
-  
+
         // Use the current array index
         option.value = `${breed.id}`;
         //console.log(option.value)
@@ -120,28 +120,30 @@ const API_KEY =
         document.getElementById("breedSelect").appendChild(option);
       }
       // Show the first breed by default
-      //showBreedImage(0);
+      showBreedImage(0);
     } catch (error) {
       console.log(error);
     }
+
+  console.log(storedBreeds);
+  console.log("are the stored breeds");
+  console.log(storedBreeds[0].image.id);
   
-    function showBreedImage(index) {
-      document.getElementById("breed_image").src = storedBreeds[index].image.url;
-  
-      document.getElementById("breed_json").textContent =
-        storedBreeds[index].temperament;
-  
-      document.getElementById("wiki_link").href =
-        storedBreeds[index].wikipedia_url;
-      document.getElementById("wiki_link").innerHTML =
-        storedBreeds[index].wikipedia_url;
+  function showBreedImage(index) {
+    
+    const breedImgSrc = `https://cdn2.thecatapi.com/images/${storedBreeds[index].image.id}.jpg`;
+    console.log(breedImgSrc)
+    const breedImgAlt = storedBreeds[index].name
+    const breedImgId = storedBreeds[index].id
+
+    const newCat = createCarouselItem(breedImgSrc, breedImgAlt, breedImgId);
+    appendCarousel(newCat);
+
     }
- }
-  
+  }
+
+
 initialLoad();
-
-
-
 
 /**
  * 2. Create an event handler for breedSelect that does the following:
