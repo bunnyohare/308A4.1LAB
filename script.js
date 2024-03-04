@@ -127,12 +127,12 @@ async function initialLoad() {
 
   console.log(storedBreeds);
   console.log("are the stored breeds");
-  console.log(storedBreeds[0].image.id);
+  //console.log(storedBreeds[0].image.id);
   
   function showBreedImage(index) {
     
     const breedImgSrc = `https://cdn2.thecatapi.com/images/${storedBreeds[index].image.id}.jpg`;
-    console.log(breedImgSrc)
+    //console.log(breedImgSrc)
     const breedImgAlt = storedBreeds[index].name
     const breedImgId = storedBreeds[index].id
 
@@ -142,8 +142,43 @@ async function initialLoad() {
     }
   }
 
-
 initialLoad();
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("breedSelect:", breedSelect);
+// Event handler for breedSelect
+breedSelect.addEventListener("change", async function() {
+  // Get the selected breed ID
+  const selectedBreedId = this.value;
+
+  try {
+    // Fetch information on the selected breed from the Cat API
+    const response = await fetch(`https://api.thecatapi.com/v1/images/search?breed_id=${selectedBreedId}`, {
+      headers: {
+        "x-api-key": API_KEY,
+      },
+    });
+
+    const data = await response.json();
+
+    // Clear the existing carousel items
+    clear();
+
+    // Create and append new carousel items for each image of the selected breed
+    data.forEach(image => {
+      const breedImgSrc = image.url;
+      const breedImgAlt = image.breeds[0].name; // Assuming the first breed in the array is the primary breed
+      const breedImgId = image.id;
+
+      const newCat = createCarouselItem(breedImgSrc, breedImgAlt, breedImgId);
+      appendCarousel(newCat);
+    });
+
+  } catch (error) {
+    console.error("Error fetching breed images:", error);
+  }
+});
+});
+
 
 /**
  * 2. Create an event handler for breedSelect that does the following:
