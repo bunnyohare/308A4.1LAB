@@ -19,6 +19,7 @@ function clear() {
   while (carousel.firstChild) {
     carousel.removeChild(carousel.firstChild);
   }
+  infoDump.innerHTML = ""
 }
 
 function appendCarousel(element) {
@@ -166,6 +167,7 @@ function showBreedImage(index) {
 
 initialLoad();
 document.addEventListener("DOMContentLoaded", function () {
+  
 
   // Event handler for breedSelect
   breedSelect.addEventListener("change", async function () {
@@ -184,23 +186,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Clear the existing carousel items
       clear();
+//first image
 
-      // Create and append new carousel items for each image of the selected breed
       data.forEach(image => {
         const breedImgSrc = image.url;
         const breedImgAlt = image.breeds[0].name; // Assuming the first breed in the array is the primary breed
         const breedImgId = image.id;
+        description = image.breeds[0].description;
         const newCat = createCarouselItem(breedImgSrc, breedImgAlt, breedImgId);
         appendCarousel(newCat);
       });
-
+// Create and append new carousel items for each image of the selected breed
       imagesLoad(selectedBreedId);
+
+      let catInfo = document.createElement("p")
+      catInfo.innerHTML = description;
+      infoDump.appendChild(catInfo)
 
     } catch (error) {
       console.error("Error fetching breed images:", error);
     }
   });
 });
+
 
 
 /**
