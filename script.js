@@ -90,7 +90,7 @@ const url = `https://api.thecatapi.com/v1/breeds`;
 let storedBreeds = [];
 let storedImages = [];
 
-let images_url = 'https://api.thecatapi.com/v1/images/search?limit=4&';
+let images_url = 'https://api.thecatapi.com/v1/images/search?limit=10&';
 
 async function imagesLoad(breed_id, breed_name='none') {
   //https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=beng&api_key=REPLACE_ME
