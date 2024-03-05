@@ -87,106 +87,123 @@ const API_KEY =
 
 const url = `https://api.thecatapi.com/v1/breeds`;
 let storedBreeds = [];
+let storedImages = [];
+
+let images_url = 'https://api.thecatapi.com/v1/images/search?limit=4&';
+
+async function imagesLoad(breed_id, breed_name='none') {
+  //https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=beng&api_key=REPLACE_ME
+  const final_images_url = `${images_url}breed_ids=${breed_id}`;
+
+  if (breed_name == 'none') {
+    breed_name = 'kitty';
+  }
+  try {
+    const response2 = await fetch(final_images_url, {
+      headers: {
+        "x-api-key": API_KEY,
+      },
+    });
+    let data2 = await response2.json();
+    storedImages = [];
+    storedImages = data2;
+    for (let i = 0; i < storedImages.length; i++) {
+      const image = storedImages[i];
+
+      if (!image) continue;
+      const breedImgSrc = `https://cdn2.thecatapi.com/images/${image.id}.jpg`;
+
+      const breedImgAlt = breed_name;
+      const breedImgId = image.id;
+      const newCat = createCarouselItem(breedImgSrc, breedImgAlt, breedImgId);
+      appendCarousel(newCat);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 async function initialLoad() {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "x-api-key": API_KEY,
+      },
+    });
+    let data = await response.json();
+    // Filter to only include those with an `image` object
+    data = data.filter((img) => img.image?.url != null);
+    storedBreeds = data;
+
+    for (let i = 0; i < storedBreeds.length; i++) {
+      const breed = storedBreeds[i];
+      let option = document.createElement("option");
+      // Skip any breeds that don't have an image
+      if (!breed.image) continue;
+      // Use the current array index
+      option.value = `${breed.id}`;
+
+      option.innerHTML = `${breed.name}`;
+      document.getElementById("breedSelect").appendChild(option);
+    }
+    // Show the first breed by default
+    showBreedImage(0);
+
+  } catch (error) {
+    console.log(error);
+  }
+
+}
+
+function showBreedImage(index) {
+  const breedImgSrc = `https://cdn2.thecatapi.com/images/${storedBreeds[index].image.id}.jpg`;
+
+  const breedImgAlt = storedBreeds[index].name
+  const breedImgId = storedBreeds[index].id
+  const newCat = createCarouselItem(breedImgSrc, breedImgAlt, breedImgId);
+  appendCarousel(newCat);
+}
+
+initialLoad();
+document.addEventListener("DOMContentLoaded", function () {
+
+  // Event handler for breedSelect
+  breedSelect.addEventListener("change", async function () {
+    // Get the selected breed ID
+    const selectedBreedId = this.value;
 
     try {
-      const response = await fetch(url, {
+      // Fetch information on the selected breed from the Cat API
+      const response = await fetch(`https://api.thecatapi.com/v1/images/search?breed_id=${selectedBreedId}`, {
         headers: {
           "x-api-key": API_KEY,
         },
       });
 
-      let data = await response.json();
+      const data = await response.json();
 
-      // Filter to only include those with an `image` object
-      data = data.filter((img) => img.image?.url != null);
+      // Clear the existing carousel items
+      clear();
 
-      storedBreeds = data;
+      // Create and append new carousel items for each image of the selected breed
+      data.forEach(image => {
+        const breedImgSrc = image.url;
+        const breedImgAlt = image.breeds[0].name; // Assuming the first breed in the array is the primary breed
+        const breedImgId = image.id;
+        const newCat = createCarouselItem(breedImgSrc, breedImgAlt, breedImgId);
+        appendCarousel(newCat);
+      });
 
-      for (let i = 0; i < storedBreeds.length; i++) {
-        const breed = storedBreeds[i];
-        //console.dir(breed)
-        //console.log('is the breed')
-        let option = document.createElement("option");
+      imagesLoad(selectedBreedId);
 
-        // Skip any breeds that don't have an image
-        if (!breed.image) continue;
-
-        // Use the current array index
-        option.value = `${breed.id}`;
-        //console.log(option.value)
-        option.innerHTML = `${breed.name}`;
-        document.getElementById("breedSelect").appendChild(option);
-      }
-      // Show the first breed by default
-      showBreedImage(0);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching breed images:", error);
     }
-
-  console.log(storedBreeds);
-  console.log("are the stored breeds");
-  //console.log(storedBreeds[0].image.id);
-  
-  function showBreedImage(index) {
-    
-    const breedImgSrc = `https://cdn2.thecatapi.com/images/${storedBreeds[index].image.id}.jpg`;
-    //console.log(breedImgSrc)
-    const breedImgAlt = storedBreeds[index].name
-    const breedImgId = storedBreeds[index].id
-
-    const newCat = createCarouselItem(breedImgSrc, breedImgAlt, breedImgId);
-    appendCarousel(newCat);
-
-    }
-  }
-
-initialLoad();
-document.addEventListener("DOMContentLoaded", function() {
-  console.log("breedSelect:", breedSelect);
-// Event handler for breedSelect
-breedSelect.addEventListener("change", async function() {
-  // Get the selected breed ID
-  const selectedBreedId = this.value;
-
-  try {
-    // Fetch information on the selected breed from the Cat API
-    const response = await fetch(`https://api.thecatapi.com/v1/images/search?breed_id=${selectedBreedId}`, {
-      headers: {
-        "x-api-key": API_KEY,
-      },
-    });
-
-    const data = await response.json();
-
-    // Clear the existing carousel items
-    clear();
-
-    // Create and append new carousel items for each image of the selected breed
-    data.forEach(image => {
-      const breedImgSrc = image.url;
-      const breedImgAlt = image.breeds[0].name; // Assuming the first breed in the array is the primary breed
-      const breedImgId = image.id;
-
-      const newCat = createCarouselItem(breedImgSrc, breedImgAlt, breedImgId);
-      appendCarousel(newCat);
-    });
-
-  } catch (error) {
-    console.error("Error fetching breed images:", error);
-  }
-});
+  });
 });
 
 
 /**
- * 2. Create an event handler for breedSelect that does the following:
- * - Retrieve information on the selected breed from the cat API using fetch().
- *  - Make sure your request is receiving multiple array items!
- *  - Check the API documentation if you're only getting a single object.
- * - For each object in the response array, create a new element for the carousel.
- *  - Append each of these new elements to the carousel.
  * - Use the other data you have been given to create an informational section within the infoDump element.
  *  - Be creative with how you create DOM elements and HTML.
  *  - Feel free to edit index.html and styles.css to suit your needs, but be careful!
